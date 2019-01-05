@@ -120,7 +120,7 @@ device_tracker:
   - platform: unifi_direct
     host: 10.1.1.22
     username: admin
-    password: BwpwHdC3lrO9aH5Z
+    password: !secret unifi_pw
     new_device_defaults:
       track_new_devices: false
       hide_if_away: false
@@ -134,18 +134,6 @@ ring:
 camera:
   - platform: ring
     monitored_conditions:
-#     - ding
-#     - motion
-#  - platform: ffmpeg
-#    name: UDP IPCAM
-#    input: rtsp://10.1.1.88:10554/tcp/av0_1
-#    input: -rtsp_transport udp -i rtsp://admin:tlJwpbo6@10.1.1.88:10554/udp/av0_0
-
-#  - platform: ffmpeg
-#    name: TCP IPCAM
-#    input: -rtsp_transport tcp -i rtsp://admin:tlJwpbo6@10.1.1.88:10554/tcp/av0_0
-#  - platform: usps
-#    scan_interval: 5
 
 binary_sensor:
   - platform: ring
@@ -181,7 +169,7 @@ binary_sensor:
 
 media_player:
   - platform: onkyo
-    host: 10.1.1.185
+    host: 10.1.1.44
     name: receiver_patio
 
   - platform: alexa
