@@ -16,3 +16,4 @@ plex.conf
 harmony_great_room.conf
 zones.yaml
 appdaemon.yaml
+ui-lovelace.yaml
