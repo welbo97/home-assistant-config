@@ -1,0 +1,468 @@
+- alias: School morning startup
+  initial_state: True
+  trigger:
+    platform: time
+    at: 06:30:00
+  condition:
+    condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  action:
+  - service: light.turn_on
+    data:
+      entity_id:
+      - light.officefan
+      - light.kitchen
+      - light.table
+      - light.yard
+  - service: media_player.alexa_tts
+    data_template:
+      message: Good morning. I have turned on the lights for you.
+      entity_id: media_player.kitchen, media_player.upstairs
+  id: c8e15240eb3e4ca5bcdb6b1c6633c7b9
+- alias: Turn off outside lights
+  initial_state: True
+  trigger:
+    platform: sun
+    event: sunrise
+    offset: +00:15
+  condition:
+    condition: or
+    conditions:
+      - condition: state
+        entity_id: 'light.yard'
+        state: 'on'
+      - condition: state
+        entity_id: 'light.entry'
+        state: 'on'
+  action:
+  - service: light.turn_off
+    data:
+      entity_id:
+        - light.yard
+        - light.entry
+  - service: media_player.alexa_tts
+    data_template:
+      message: "Looks like the sun is up good and the outside lights are on. I will turn
+        them off for you."
+      entity_id: group.all_echos
+  id: 16b6808fd585489c87fc1800c734ee7b
+- alias: HA_Start
+  initial_state: True
+  trigger:
+    platform: homeassistant
+    event: start
+  action:
+  - service: mqtt.publish
+    data:
+      payload: ''
+      topic: cmnd/sonoffs/POWER
+      qos: 0
+      retain: 0
+  - service: mqtt.publish
+    data:
+      payload: ''
+      topic: cmnd/sonoffs/STATE
+      qos: 0
+      retain: 0
+  - service: media_player.alexa_tts
+    data_template:
+      message: Home assistant startup complete
+      entity_id: media_player.patio_dot
+  - service: mqtt.publish
+    data:
+      payload: ''
+      topic: cmnd/sonoffs/POWER2
+      qos: 0
+      retain: 0
+
+  id: garage_reconnect
+- alias: Garage controller reconnect
+  initial_state: False
+  trigger:
+    platform: state
+    entity_id: cover.toggle1
+    to: 'unavailable'
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 4
+  action:
+    service: mqtt.publish
+    data:
+      payload: ''
+      topic: cmnd/garage/POWER2
+      qos: 0
+      retain: 0
+
+  id: ca163ff1647c4baf954199a7b700adbd
+- alias: Garage State Notification
+  initial_state: False
+  trigger:
+    platform: state
+    entity_id: cover.toggle1
+    from: not_unavailable
+  action:
+  - service: media_player.alexa_tts
+    data_template:
+      message: 'The {{ trigger.to_state.attributes.friendly_name }} is: {{ trigger.to_state.state
+        }}'
+      entity_id: media_player.patio_dot
+#  - service: notify.phones
+#    data_template:
+#      title: 'Garage state'
+#      message: 'The garage is: {{ trigger.to_state.state }}'
+
+  id: b5834c13459544caa4c5217c54d5e506
+- alias: Office fan is unbalanced
+  initial_state: True
+  trigger:
+    platform: template
+    value_template: '{% if is_state_attr(''fan.office_fan'', ''speed'', ''high'')
+      %}true{% endif %}'
+  action:
+  - service: fan.set_speed
+    data:
+      speed: low
+      entity_id: fan.office_fan
+  - service: media_player.alexa_tts
+    data_template:
+      message: The office fan is too unbalanced to run at high speed. Setting it to
+        low speed.
+      entity_id: media_player.kitchen
+  id: 917d0fcce7a84a249f6a8845306396ba
+
+- id: '1534775156856'
+  alias: Garage was left open
+  initial_state: True
+  trigger:
+    platform: time
+    at: '20:05:00'
+  condition:
+  - condition: state
+    entity_id: cover.toggle1
+    state: open
+  action:
+  - service: media_player.alexa_tts
+    data_template:
+      message: It is 8:05 pm and the garage door was left open.
+      entity_id: group.all_echos
+  - service: notify.phones
+    data:
+      title: Garage Open
+      message: The garage door was left open as of 8:05 pm.
+      data:
+        push:
+          badge: 0
+#          sound: <sound file here>
+          category: "garage"
+        action_data:
+          entity_id: cover.toggle1
+#          my_custom_data: foo_bar
+        subtitle: You should close it
+#  - service: cover.close_cover
+#    entity_id: cover.toggle1
+
+- id: 'move_garage_door'
+  alias: Move the garage door
+  initial_state: False
+  trigger:
+    platform: event
+    event_type: ios.notification_action_fired
+    event_data:
+      actionName: MOVEDOOR
+  action:
+    service: cover.close_cover
+    entity_id: cover.toggle1
+
+- id: '1535232084234'
+  initial_state: True
+  alias: Soldering iron on
+  trigger:
+  - entity_id: switch.officedesk
+    from: 'off'
+    platform: state
+    to: 'on'
+    for:
+      hours: 2
+  action:
+  - service: media_player.alexa_tts
+    data_template:
+      entity_id: group.all_echos
+      message: The soldering iron has been on for two hours. Let me turn it off for you.
+  - service: switch.turn_off
+    data:
+      entity_id: switch.officedesk
+
+- id: '1537845424076'
+  initial_state: True
+  alias: Front door
+  trigger:
+    platform: state
+    entity_id: binary_sensor.ring_nb_front_motion
+    from: 'off'
+    to: 'on'
+  condition:
+    - condition: template
+      value_template: '{{ states.sun.sun.attributes.elevation < 4 }}'
+  action:
+  - service: light.turn_on
+    data:
+      entity_id:
+        - light.entry
+        - light.officefan
+#  - service: media_player.alexa_tts
+#    data_template:
+#      entity_id: group.all_echos
+#      message: There is motion at the front door
+  - service: notify.phones
+    data:
+      message: Motion is detected at the front door.
+  - delay: '00:30:00'
+  - service: light.turn_off
+    data:
+      entity_id:
+        - light.entry
+        - light.officefan
+
+- id: '1538156318288'
+  initial_state: True
+  alias: Meredith is home
+  trigger:
+#    entity_id: device_tracker.meredith_4ce8c31f07c34e62b71d5cbf643d5ece
+    entity_id: group.meredith
+    from: 'not_home'
+    platform: state
+    to: 'home'
+  condition:
+    - condition: numeric_state
+      entity_id: sensor.dark_sky_wind_speed
+      below: 13
+
+  action:
+    - service: light.turn_on
+      data:
+        entity_id:
+          - light.officefan
+          - light.kitchen
+          - light.livingfan
+          - light.table
+#    - service: switch.turn_on
+#      data:
+#        entity_id:
+#          - switch.christmastree
+#          - switch.christmaslights
+    - service: notify.ios_will
+      data:
+        title: "Meredith Location Notification"
+        message: "All is well."
+        data:
+          subtitle: "Meredith is home"
+          push:
+            badge: 1
+#    - service: media_player.alexa_tts
+#      data_template:
+#        entity_id: media_player.kitchen, media_player.patio_dot, media_player.bathroom_dot, media_player.upstairs, media_player.garage_dot
+#        message: Welcome home, Meredith. Let me turn on the lights for you. Boys. Put away your things.
+
+- id: '979797979797'
+  initial_state: False
+  alias: Will is home
+  trigger:
+    entity_id: binary_sensor.will_presence
+    from: 'off'
+    platform: state
+    to: 'on'
+  #  for:
+  #    minutes: 2
+  condition:
+    - condition: template
+      value_template: '{{ states.sun.sun.attributes.elevation < 4 }}'
+  action:
+    - service: light.turn_on
+      data:
+        entity_id:
+          - light.officedesk
+          - light.entry
+  #  - service: media_player.alexa_tts
+  #    data_template:
+  #      entity_id: kitchen
+  #      message: Hey everybody. Dad is home. Drop what you are doing and go give him hugs and kisses.
+
+- id: 'Will is at work'
+  alias: Will at work
+  trigger:
+    platform: zone
+    entity_id: device_tracker.will_c2b0add59fa641c29c3a23da6375db6c
+    zone: zone.saturn
+    event: enter
+  action:
+    - service: notify.ios_merediths_iphone
+      data:
+        title: "Will Location Notification"
+        message: "And he loves and misses you!"
+        data:
+          subtitle: "Will is back at Saturn"
+          push:
+            badge: 1
+
+- id: 'Meredith on the move'
+  alias: Meredith leaving home
+  trigger:
+    platform: zone
+    entity_id: device_tracker.meredith_4ce8c31f07c34e62b71d5cbf643d5ece
+    zone: zone.Home
+    event: leave
+  action:
+    - service: notify.ios_will
+      data:
+        title: "Meredith Location Notification"
+        message: "Better keep an eye on her!"
+        data:
+          subtitle: "Meredith is on the move"
+          push:
+            badge: 1
+
+#- id: 'someone_is_home'
+#  initial_state: True
+#  alias: Someone is home
+#  trigger:
+#    entity_id: group.family
+#    from: 'not_home'
+#    platform: state
+#    to: 'home'
+  #  for:
+  #    minutes: 2
+#  condition:
+#    - condition: template
+#      value_template: '{{ states.sun.sun.attributes.elevation < 4 }}'
+#    - condition: numeric_state
+#      entity_id: sensor.dark_sky_wind_speed
+#      below: 13
+#  action:
+#    - service: switch.turn_on
+#      data:
+#        entity_id:
+#          - switch.christmaslights
+#          - switch.christmastree
+#    - service: light.turn_on
+#      data:
+#        entity_id: light.entry
+
+- id: 'everyone_is_gone'
+  initial_state: True
+  alias: Nobody home
+  trigger:
+    platform: state
+    entity_id: group.family
+    from: ‘not_home’
+    to: ‘home’
+#    platform: time
+    # You can also match on interval. This will match every 24 minutes
+#    minutes: '/24'
+#    seconds: 00
+  condition:
+#    - condition: state
+#      entity_id: group.family
+#      state: 'not_home'
+  #    for:
+  #      hours: 0
+  #      minutes: 15
+  #      seconds: 5
+   - condition: state
+     entity_id: group.all_lights
+     state: 'on'
+
+#  trigger:
+#    entity_id: group.family
+#    from: 'home'
+#    to: 'away'
+#    platform: state
+#    for:
+#      hours: 1
+  action:
+    - service: light.turn_off
+      data:
+        entity_id: group.all_lights
+    - service: fan.turn_off
+      data:
+        entity_id: group.all_fans
+    - service: switch.turn_off
+      data:
+        entity_id: group.all_switches
+    - service: media_player.alexa_tts
+      data_template:
+        entity_id: media_player.kitchen
+        message: Well I don't see any reason to keep these lights and fans on. Let me know when you get home.
+    - service: notify.phones
+      data:
+        message: The lights, fans and switches have been turned off automatically.
+
+#- id: 'christmas lights on'
+#  initial_state: True
+#  alias: Christmas lights
+#  trigger:
+#    platform: sun
+    # Possible values: sunset, sunrise
+#    event: sunset
+    # Optional time offset. This example is 45 minutes.
+#    offset: '-00:45:00'
+#  condition:
+#    - condition: state
+#      entity_id: group.family
+#      state: 'home'
+  #    for:
+  #      hours: 0
+  #      minutes: 15
+  #      seconds: 5
+#  condition:
+#    condition: numeric_state
+#    entity_id: sensor.dark_sky_wind_speed
+#    below: 13
+
+#  action:
+#    - service: switch.turn_on
+#      data:
+#        entity_id:
+#          - switch.christmaslights
+#          - switch.christmastree
+#    - service: media_player.volume_set
+#      data:
+#        entity_id: media_player.kitchen
+#        volume_level: 0.4
+#    - service: media_player.play_media
+#      data:
+#        entity_id: media_player.kitchen
+#        media_content_type: AMAZON_MUSIC
+#        media_content_id: Santa Claus Is Coming To Town
+- id: 'Battery charger timer'
+  initial_state: True
+  alias: Batt charger timer
+  trigger:
+    platform: time
+    at: '06:08:44'
+  action:
+    - service: switch.turn_on
+      data:
+        entity_id: switch.powerstrip
+    - delay: '01:00:00'
+    - service: switch.turn_off
+      data:
+        entity_id: switch.powerstrip
+
+#- id: 'christmas lights off'
+#  initial_state: True
+#  alias: Christmas lights off
+#  trigger:
+#    platform: time
+#    at: '00:03:12'
+#  action:
+#    - service: switch.turn_off
+#      data:
+#        entity_id:
+#          - switch.christmaslights
+#          - switch.christmastree

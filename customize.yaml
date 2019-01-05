@@ -1,0 +1,86 @@
+#input_boolean.weather:
+#  custom_ui_state_card: custom-weather-card
+#  config:
+#    weather: weather.yweather
+#    sun: sun.sun
+camera.ffmpeg:
+  order: 1
+camera.nb_front:
+  order: 2
+camera.den_door:
+  order: 3
+camera.front_door:
+  order: 4
+camera.302:
+  order: 5
+
+cover.toggle1:
+  device_class: garage
+  friendly_name: Garage Door
+
+light.landing:
+  friendly_name: Landing Light
+  icon: mdi:ceiling-light
+light.entry:
+  friendly_name: Drive and Entry
+  icon: mdi:ceiling-light
+
+light.table:
+  friendly_name: Table Light
+  icon: mdi:ceiling-light
+
+light.yard:
+  friendly_name: Yard lights
+  icon: mdi:glass-cocktail
+
+light.officefan:
+  friendly_name: Office light
+  icon: mdi:fan
+
+light.mediaroom:
+  icon: mdi:fan
+  friendly_name: Media room light
+
+light.kitchen:
+  icon: mdi:ceiling-light
+  friendly_name: Kitchen light
+
+light.livingroom:
+  icon: mdi:fan
+  friendly_name: Living room light
+
+light.office_lamp:
+  icon: mdi:lamp
+  friendly_name: Office lamp
+
+fan.office_fan:
+  icon: mdi:fan
+  friendly_name: Office Fan
+
+fan.media_fan:
+  icon: mdi:fan
+  friendly_name: Media Room Fan
+
+fan.living_fan:
+  icon: mdi:fan
+  friendly_name: Living Room Fan
+
+switch.officedesk:
+  icon: mdi:sword-cross
+  friendly_name: Office Desk
+
+switch.extra:
+  icon: mdi:sword-cross
+  friendly_name: Test Outlet
+
+switch.powerstrip:
+  icon: mdi:flash
+  friendly_name: Smart Powerstrip
+
+switch.christmaslights:
+  icon: mdi:snowflake
+  friendly_name: Christmas Lights
+
+switch.christmastree:
+  icon: mdi:pine-tree
+  friendly_name: Christmas Tree

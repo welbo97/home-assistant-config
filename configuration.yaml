@@ -1,0 +1,712 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret latitude
+  longitude: !secret longitude
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 300
+  # metric for Metric, imperial for Imperial
+  unit_system: imperial
+  # Pick yours from here: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  time_zone: America/Chicago
+  # Customization file
+  customize: !include customize.yaml
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+zone: !include zones.yaml
+
+
+# Show links to resources in log and frontend
+# introduction:
+
+# Enables the frontend
+frontend:
+#  extra_html_url:
+#    - /local/custom_ui/custom-weather-card.html
+#  extra_html_url_es5:
+#    - /local/custom_ui/custom-weather-card.html
+
+weather:
+  - platform: darksky
+    api_key: !secret darksky_key
+
+#input_boolean:
+#  weather:
+
+
+# Enables configuration UI
+config:
+
+http:
+  # Secrets are defined in the file secrets.yaml
+  api_password: !secret http_password
+  # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
+  base_url: https://hassio.avolarcorp.com:8123
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
+
+# Checks for available updates
+# Note: This component will send some information about your system to
+# the developers to assist with development of Home Assistant.
+# For more information, please see:
+# https://home-assistant.io/blog/2016/10/25/explaining-the-updater/
+updater:
+  # Optional, allows Home Assistant developers to focus on popular components.
+  # include_used_components: true
+
+homekit:
+
+# Discover some devices automatically
+discovery:
+  enable:
+     - homekit
+
+# Allows you to issue voice commands from the frontend in enabled browsers
+conversation:
+
+# Enables support for tracking state changes over time
+history:
+
+# View all events in a logbook
+logbook:
+
+# Enable additional logging in log viewer addon
+logger:
+  default: info
+
+# Enables a map showing the location of tracked devices
+map:
+
+# Track the sun
+sun:
+
+# iOS app enable
+ios:
+ push:
+    categories:
+      - name: Garage
+        identifier: 'garage'
+        actions:
+          - identifier: 'MOVEDOOR'
+            title: 'Close door'
+            activationMode: 'background'
+            authenticationRequired: yes
+            destructive: no
+#            behavior: 'textInput'
+#            textInputButtonTitle: 'Garage'
+#            textInputPlaceholder: 'Placeholder'
+owntracks:
+  max_gps_accuracy: 75
+  mqtt_topic: owntracks/#
+#  events_only: true
+  waypoint_whitelist:
+    - will
+
+device_tracker:
+#  - platform: bluetooth_tracker
+#    consider_home: 300
+#    track_new_devices: no
+#  - platform: bluetooth_le_tracker
+#  - platform: owntracks
+#    max_gps_accuracy: 75
+  - platform: ping
+    hosts:
+      will_ping: 10.1.1.32
+      meredith_ping: 10.1.1.33
+    consider_home: 600
+  - platform: unifi_direct
+    host: 10.1.1.22
+    username: admin
+    password: BwpwHdC3lrO9aH5Z
+    new_device_defaults:
+      track_new_devices: false
+      hide_if_away: false
+
+#ffmpeg:
+
+ring:
+  username: !secret ring_username
+  password: !secret ring_password
+
+camera:
+  - platform: ring
+    monitored_conditions:
+#     - ding
+#     - motion
+#  - platform: ffmpeg
+#    name: UDP IPCAM
+#    input: rtsp://10.1.1.88:10554/tcp/av0_1
+#    input: -rtsp_transport udp -i rtsp://admin:tlJwpbo6@10.1.1.88:10554/udp/av0_0
+
+#  - platform: ffmpeg
+#    name: TCP IPCAM
+#    input: -rtsp_transport tcp -i rtsp://admin:tlJwpbo6@10.1.1.88:10554/tcp/av0_0
+#  - platform: usps
+#    scan_interval: 5
+
+binary_sensor:
+  - platform: ring
+    monitored_conditions:
+      - ding
+      - motion
+
+  - platform: bayesian
+    prior: 0.5
+    name: 'Will Presence'
+    probability_threshold: 0.7
+    observations:
+      - entity_id: 'device_tracker.will_ping'
+        prob_given_true: 0.9
+        prob_given_false: 0.4
+        platform: 'state'
+        to_state: 'home'
+      - entity_id: 'device_tracker.will'
+        prob_given_true: 0.9
+        prob_given_false: 0.2
+        platform: 'state'
+        to_state: 'home'
+      - entity_id: 'device_tracker.will_c2b0add59fa641c29c3a23da6375db6c'
+        prob_given_true: 0.9
+        prob_given_false: 0.3
+        platform: 'state'
+        to_state: 'home'
+#      - entity_id: 'device_tracker.wills_iphone'
+#        prob_given_true: 0.9
+#        prob_given_false: 0.4
+#        platform: 'state'
+#        to_state: 'home'
+
+media_player:
+  - platform: onkyo
+    host: 10.1.1.185
+    name: receiver_patio
+
+  - platform: alexa
+    email: !secret amazon_email
+    password: !secret amazon_password
+    url: amazon.com
+
+  - platform: plex
+    entity_namespace: 'plex'
+    use_episode_art: true
+
+# Text to speech
+tts:
+  - platform: amazon_polly
+    aws_access_key_id: !secret aws_access_key_id
+    aws_secret_access_key: !secret aws_secret_access_key
+    voice: Joanna
+
+
+# Cloud
+cloud:
+  alexa:
+    filter:
+#      include_entities:
+#        - switch.toggle2
+#        - cover.toggle1
+      include_domains:
+#        - alert
+#        - automation
+        - group
+        - lock
+        - scene
+#        - script
+        - switch
+        - light
+        - cover
+        - media_player
+    entity_config:
+#      switch.toggle2:
+#        name: table
+#        description: The light over the kitchen table
+      cover.toggle1:
+        name: Garage door
+        description: The garage door
+
+# mqtt setup from sonoff-tasmota
+mqtt:
+  broker: core-mosquitto
+  port: 1883
+  client_id: home-assistant-1
+  keepalive: 60
+#  discovery: true
+#  discovery_prefix: homeassistant
+  username: !secret mqtt_user1
+  password: !secret mqtt_pass1
+  protocol: 3.1
+  birth_message:
+    topic: "tele/hass1/LWT"
+    payload: "Online"
+    qos: 1
+    retain: false
+  will_message:
+    topic: "tele/hass1/LWT"
+    payload: "Offline"
+    qos: 1
+    retain: true
+
+sensor:
+# Dark Sky weather sensor
+  - platform: darksky
+    api_key: !secret darksky_key
+    monitored_conditions:
+      - summary
+#      - icon
+      - temperature
+      - wind_speed
+      - wind_bearing
+#      - humidity
+#      - pressure
+#      - cloud_cover
+#      - precip_type
+#      - precip_intensity
+      - precip_accumulation
+      - nearest_storm_distance
+    units: us
+
+  - platform: mqtt
+    name: "Office Temperature"
+    state_topic: "tele/extra/SENSOR"
+    value_template: "{{ value_json['AM2301'].Temperature }}"
+    unit_of_measurement: "°F"
+    monitored_conditions:
+
+  - platform: mqtt
+    name: "Office Humidity"
+    state_topic: "tele/extra/SENSOR"
+    value_template: "{{ value_json['AM2301'].Humidity }}"
+    unit_of_measurement: "%"
+    monitored_conditions:
+
+  - platform: mqtt
+    name: "Yard Temperature"
+    state_topic: "tele/yard/SENSOR"
+    value_template: "{{ value_json['AM2301'].Temperature }}"
+    unit_of_measurement: "°F"
+    monitored_conditions:
+      - temperature
+
+  - platform: mqtt
+    name: "Yard Humidity"
+    state_topic: "tele/yard/SENSOR"
+    value_template: "{{ value_json['AM2301'].Humidity }}"
+    unit_of_measurement: "%"
+    monitored_conditions:
+      - humidity
+
+  - platform: mqtt
+    name: "Kitchen Temperature"
+    state_topic: "tele/kitchen/SENSOR"
+    value_template: "{{ value_json['AM2301'].Temperature }}"
+    unit_of_measurement: "°F"
+    monitored_conditions:
+      - temperature
+
+  - platform: mqtt
+    name: "Kitchen Humidity"
+    state_topic: "tele/kitchen/SENSOR"
+    value_template: "{{ value_json['AM2301'].Humidity }}"
+    unit_of_measurement: "%"
+    monitored_conditions:
+      - humidity
+
+  - platform: mqtt
+    name: "Garage Temperature"
+    state_topic: "tele/garage/SENSOR"
+    value_template: "{{ value_json['AM2301'].Temperature }}"
+    unit_of_measurement: "°F"
+    monitored_conditions:
+      - temperature
+
+  - platform: mqtt
+    name: "Garage Humidity"
+    state_topic: "tele/garage/SENSOR"
+    value_template: "{{ value_json['AM2301'].Humidity }}"
+    unit_of_measurement: "%"
+    monitored_conditions:
+      - humidity
+
+  - platform: mqtt
+    name: "Powerstrip Temperature"
+    state_topic: "tele/powerstrip/SENSOR"
+    value_template: "{{ value_json['AM2301'].Temperature }}"
+    unit_of_measurement: "°F"
+    monitored_conditions:
+      - temperature
+
+  - platform: mqtt
+    name: "Powerstrip Humidity"
+    state_topic: "tele/powerstrip/SENSOR"
+    value_template: "{{ value_json['AM2301'].Humidity }}"
+    unit_of_measurement: "%"
+    monitored_conditions:
+      - humidity
+
+  - platform: mqtt
+    name: "Christmas light energy"
+    state_topic: "tele/plug1/SENSOR"
+    value_template: "{{ value_json['ENERGY'].Total }}"
+    unit_of_measurement: "kWh"
+    monitored_conditions:
+      - Total Power
+
+  - platform: mqtt
+    name: "Christmas Tree energy"
+    state_topic: "tele/plug2/SENSOR"
+    value_template: "{{ value_json['ENERGY'].Total }}"
+    unit_of_measurement: "kWh"
+    monitored_conditions:
+      - Total Power
+
+  # Weather prediction
+#  - platform: openweathermap
+#    api_key: !secret owm_key
+#    monitored_conditions:
+#      - weather
+#      - temperature
+#      - wind_speed
+#      - wind_bearing
+#      - humidity
+#      - pressure
+#      - clouds
+#      - rain
+#      - snow
+
+notify:
+  - name: phones
+    platform: group
+    services:
+      - service: ios_will
+      - service: ios_merediths_iphone
+
+# sonoff switch config from tasmota/DrZz yt
+cover:
+  - platform: mqtt
+    name: "toggle1"
+    state_topic: "stat/garage/POWER2"
+#    state_topic: "tele/garage/SENSOR"
+#    value_template: '{{ value_json["Switch2"] }}'
+    command_topic: "cmnd/garage/POWER1"
+    availability_topic: "tele/garage/LWT"
+    qos: 1
+    payload_open: "ON"
+    payload_close: "ON"
+    payload_stop: "ON"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_open: "1"
+    state_closed: "0"
+    optimistic: false
+    retain: false
+
+fan:
+  - platform: mqtt
+    name: "office_fan"
+    state_topic: "stat/office_fan/RESULT"
+    speed_state_topic: "stat/office_fan/RESULT"
+#    state_value_template: "{% if value_json.FanSpeed == 0 -%}0{%- elif value_json.FanSpeed > 0 -%}2{%- endif %}"
+#    speed_value_template: "{{ value_json.FanSpeed }}"
+    state_value_template: >
+      {% if value_json.FanSpeed is defined %}
+        {% if value_json.FanSpeed == 0 -%}0{%- elif value_json.FanSpeed > 0 -%}4{%- endif %}
+      {% else %}
+        {% if states.fan.office_fan.state == 'off' -%}0{%- elif states.fan.office_fan.state == 'on' -%}4{%- endif %}
+      {% endif %}
+    speed_value_template: "{{ value_json.FanSpeed }}"
+    availability_topic: tele/office_fan/LWT
+    payload_available: Online
+    payload_not_available: Offline
+    speed_command_topic: "cmnd/office_fan/FanSpeed"
+    payload_low_speed: "1"
+    payload_medium_speed: "2"
+    payload_high_speed: "3"
+    command_topic: "cmnd/office_fan/FanSpeed"
+    payload_off: "0"
+    payload_on: "4"
+    speeds:
+      - off
+      - low
+      - medium
+      - high
+
+  - platform: mqtt
+    name: "media_fan"
+    state_topic: "media_fan/stat/RESULT"
+    speed_state_topic: "media_fan/stat/RESULT"
+#    state_value_template: "{% if value_json.FanSpeed == 0 -%}0{%- elif value_json.FanSpeed > 0 -%}2{%- endif %}"
+    state_value_template: >
+      {% if value_json.FanSpeed is defined %}
+        {% if value_json.FanSpeed == 0 -%}0{%- elif value_json.FanSpeed > 0 -%}4{%- endif %}
+      {% else %}
+        {% if states.fan.media_fan.state == 'off' -%}0{%- elif states.fan.media_fan.state == 'on' -%}4{%- endif %}
+      {% endif %}
+    speed_value_template: "{{ value_json.FanSpeed }}"
+    availability_topic: media_fan/tele/LWT
+    payload_available: Online
+    payload_not_available: Offline
+    speed_command_topic: "media_fan/cmnd/FanSpeed"
+    payload_low_speed: "1"
+    payload_medium_speed: "2"
+    payload_high_speed: "3"
+    command_topic: "media_fan/cmnd/FanSpeed"
+    payload_off: "0"
+    payload_on: "4"
+    speeds:
+      - off
+      - low
+      - medium
+      - high
+
+  - platform: mqtt
+    name: "living_fan"
+    state_topic: "living_fan/stat/RESULT"
+    speed_state_topic: "living_fan/stat/RESULT"
+#    state_value_template: "{% if value_json.FanSpeed == 0 -%}0{%- elif value_json.FanSpeed > 0 -%}2{%- endif %}"
+    state_value_template: >
+      {% if value_json.FanSpeed is defined %}
+        {% if value_json.FanSpeed == 0 -%}0{%- elif value_json.FanSpeed > 0 -%}4{%- endif %}
+      {% else %}
+        {% if states.fan.living_fan.state == 'off' -%}0{%- elif states.fan.living_fan.state == 'on' -%}4{%- endif %}
+      {% endif %}
+    speed_value_template: "{{ value_json.FanSpeed }}"
+    availability_topic: living_fan/tele/LWT
+    payload_available: Online
+    payload_not_available: Offline
+    speed_command_topic: "living_fan/cmnd/FanSpeed"
+    payload_low_speed: "1"
+    payload_medium_speed: "2"
+    payload_high_speed: "3"
+    command_topic: "living_fan/cmnd/FanSpeed"
+    payload_off: "0"
+    payload_on: "4"
+    speeds:
+      - off
+      - low
+      - medium
+      - high
+
+light:
+  - platform: mqtt
+    name: "Office_lamp"
+    state_topic: "smartthings/Office lamp/switch"
+    command_topic: "smartthings/Office lamp/switch"
+    brightness_state_topic: "smartthings/Office lamp/level"
+    brightness_command_topic: "smartthings/Office lamp/level"
+    payload_on: "on"
+    payload_off: "off"
+    retain: true
+
+  - platform: mqtt
+    name: "entry"
+    icon: mdi:lightbulb-on
+    state_topic: "stat/entry/POWER"
+    command_topic: "cmnd/entry/POWER"
+    availability_topic: "tele/entry/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "table"
+    icon: mdi:ceiling-light
+    state_topic: "stat/table/POWER"
+    command_topic: "cmnd/table/POWER"
+    availability_topic: "tele/table/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "yard"
+    icon: mdi:lightbulb
+    state_topic: "stat/yard/POWER"
+    command_topic: "cmnd/yard/POWER"
+    availability_topic: "tele/yard/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "officefan"
+    icon: mdi:ceiling-light
+    state_topic: "stat/office_fan/POWER1"
+    command_topic: "cmnd/office_fan/POWER1"
+    availability_topic: "tele/office_fan/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "mediaroom"
+    icon: mdi:fan
+    state_topic: "media_fan/stat/POWER1"
+    command_topic: "media_fan/cmnd/POWER1"
+    availability_topic: "media_fan/tele/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "kitchen"
+    icon: mdi:ceiling-light
+    state_topic: "stat/kitchen/POWER"
+    command_topic: "cmnd/kitchen/POWER"
+    availability_topic: "tele/kitchen/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "livingroom"
+    icon: mdi:fan
+    state_topic: "living_fan/stat/POWER1"
+    command_topic: "living_fan/cmnd/POWER1"
+    availability_topic: "living_fan/tele/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "landing"
+    icon: mdi:ceiling-light
+    state_topic: "living_fan/stat/RESULT"
+    state_value_template: "{{ value_json['S29cmnd_D0']['STATE'] }}"
+    state_on: "ON"
+    state_off: "OFF"
+    command_topic: "living_fan/cmnd/sensor29"
+    payload_on: "0,On"
+    payload_off: "0,Off"
+    payload_toggle: "0,T"
+    availability_topic: "living_fan/tele/LWT"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    optimistic: False
+    retain: False
+
+switch:
+
+  - platform: mqtt
+    name: "officedesk"
+    icon: mdi:sword-cross
+    state_topic: "stat/office_desk/POWER"
+    command_topic: "cmnd/office_desk/POWER"
+    availability_topic: "tele/office_desk/LWT"
+    qos: 1
+    payload_on: "On"
+    payload_off: "Off"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "extra"
+    icon: mdi:sword-cross
+    state_topic: "stat/extra/POWER"
+    command_topic: "cmnd/extra/POWER"
+    availability_topic: "tele/extra/LWT"
+    qos: 1
+    payload_on: "On"
+    payload_off: "Off"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "powerstrip"
+    icon: mdi:flash-circle
+    state_topic: "stat/powerstrip/POWER"
+    command_topic: "cmnd/powerstrip/POWER"
+    availability_topic: "tele/powerstrip/LWT"
+    qos: 1
+    payload_on: "On"
+    payload_off: "Off"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "christmaslights"
+    icon: mdi:snowflake
+    state_topic: "stat/plug1/POWER"
+    command_topic: "cmnd/plug1/POWER"
+    availability_topic: "tele/plug1/LWT"
+    qos: 1
+    payload_on: "On"
+    payload_off: "Off"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false
+
+  - platform: mqtt
+    name: "christmastree"
+    icon: mdi:pine-tree
+    state_topic: "stat/plug2/POWER"
+    command_topic: "cmnd/plug2/POWER"
+    availability_topic: "tele/plug2/LWT"
+    qos: 1
+    payload_on: "On"
+    payload_off: "Off"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+    state_on: "ON"
+    state_off: "OFF"
+    optimistic: false
+    retain: false

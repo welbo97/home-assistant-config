@@ -1,0 +1,208 @@
+will:
+  name: Will
+  view: no
+  entities:
+    - device_tracker.will
+    - device_tracker.will_2
+    - device_tracker.will_ping
+    - device_tracker.will_c2b0add59fa641c29c3a23da6375db6c
+
+meredith:
+  name: Meredith
+  view: no
+  entities:
+    - device_tracker.meredith_ping
+    - device_tracker.meredithsiphone
+    - device_tracker.meredith_4ce8c31f07c34e62b71d5cbf643d5ece
+
+family:
+  name: Family
+  view: no
+  entities:
+    - group.will
+    - group.meredith
+
+garage_doors:
+  name: Garage Doors
+  view: no
+  control: hidden
+  icon: mdi:garage
+  entities:
+    - cover.toggle1
+
+lights:
+  name: Lights
+  view: no
+  control: hidden
+  icon: mdi:lightbulb
+  entities:
+    - light.entry
+    - light.kitchen
+    - light.table
+    - light.yard
+    - light.officefan
+    - light.livingroom
+    - light.mediaroom
+    - light.office_lamp
+    - light.landing
+
+fans:
+  name: Fans
+  view: no
+  control: hidden
+  icon: mdi:fan
+  entities:
+    - fan.office_fan
+    - fan.media_fan
+    - fan.living_fan
+
+switches:
+  name: Power Outlets
+  view: no
+  control: hidden
+  icon: mdi:sword-cross
+  entities:
+    - switch.extra
+    - switch.officedesk
+    - switch.powerstrip
+    - switch.plug1
+    - switch.plug2
+
+all_echos:
+  name: All echos
+  view: no
+  control: hidden
+  icon: mdi:youtube-tv
+  entities:
+    - media_player.kitchen
+    - media_player.upstairs
+    - media_player.patio_dot
+    - media_player.bathroom_dot
+    - media_player.garage_dot
+    - media_player.merediths_echosim_beta
+
+media_players:
+  name: Media Players
+  view: no
+  control: hidden
+  icon: mdi:television-classic
+  entities:
+    - media_player.kitchen
+    - media_player.patio_dot
+    - media_player.bathroom_dot
+    - media_player.garage_dot
+    - media_player.upstairs
+    - media_player.chromecastaudio9101
+    - media_player.living_un55es6150
+    - media_player.samsung_8_series_65_un65ks8500
+    - media_player.viziosoundbar
+    - media_player.merediths_fire_tv_stick
+    - media_player.receiver_patio
+    - media_player.roku_1gh35r012588
+    - media_player.roku_yj00g8278630
+    - media_player.roku_yn00ly581092
+
+#weather:
+#  name: Weather Forecast
+#  view: no
+#  entities:
+#      - input_boolean.weather
+
+#default_view:
+#  view: yes
+#  entities:
+#  - sun.sun
+#  - group.people
+#  - script.star_wars
+default_view:
+  view: yes
+  icon: mdi:home
+  entities:
+    - group.lights
+    - group.fans
+    - group.switches
+    - group.garage_doors
+#    - group.media_players
+    - weather.dark_sky
+    - sun.sun
+    - sensor.dark_sky_temperature
+    - sensor.dark_sky_summary
+    - sensor.dark_sky_nearest_storm_distance
+    - sensor.dark_sky_precip_accumulation
+    - sensor.dark_sky_wind_bearing
+    - sensor.dark_sky_wind_speed
+    - sensor.kitchen_temperature
+    - sensor.kitchen_humidity
+    - sensor.office_temperature
+    - sensor.office_humidity
+    - sensor.yard_temperature
+    - sensor.yard_humidity
+    - sensor.garage_temperature
+    - sensor.garage_humidity
+    - sensor.christmas_light_energy
+    - sensor.christmas_tree_energy
+    - binary_sensor.will_presence
+#    - camera.generic_camera
+#    - camera.ffmpeg_2
+
+camera_page:
+  name: Cameras
+  icon: mdi:cctv
+  view: yes
+  entities:
+#    - camera.tcp_ipcam
+#    - camera.udp_ipcam
+    - camera.nb_front
+    - camera.den_door
+    - camera.front_door
+    - camera.302
+
+media_player_page:
+  name: Media Players
+  icon: mdi:youtube-tv
+  view: yes
+  entities:
+    - group.media_players
+#    - media_player.upstairs
+#    - media_player.roku_1gh35r012588
+#    - binary_sensor.will_presence
+
+automation_page:
+  name: Automation
+  icon: mdi:checkbox-multiple-marked
+  view: yes
+  entities:
+#    - group.all_automations
+#    - group.all_scripts
+    - automation.front_door
+    - automation.garage_state_notification
+    - automation.garage_was_left_open
+    - automation.Garage_controller_reconnect
+    - automation.move_garage_door
+    - automation.ha_start
+    - automation.meredith_is_home
+    - automation.nobody_home
+    - automation.office_fan_is_unbalanced
+    - automation.school_morning_startup
+    - automation.soldering_iron_on
+    - automation.turn_off_outside_lights
+    - automation.will_is_home
+    - script.back_online
+    - script.star_wars
+    - script.weather_data
+    - script.audio_notify
+    - script.will_iphone_notify
+    - script.merediths_iphone_notify
+
+
+
+#script_page:
+#  name: Scripts
+#  icon: mdi:chevron-double-right
+#  view: yes
+#  entities:
+#    - group.all_scripts
+#    - script.back_online
+#    - script.star_wars
+#    - script.weather_data
+#    - script.audio_notify
