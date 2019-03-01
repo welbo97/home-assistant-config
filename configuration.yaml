@@ -42,7 +42,7 @@ config:
 
 http:
   # Secrets are defined in the file secrets.yaml
-  api_password: !secret http_password
+#  api_password: !secret http_password
   # Uncomment this if you are using SSL/TLS, running in Docker container, etc.
   base_url: !secret http_link
   ssl_certificate: /ssl/fullchain.pem
@@ -63,7 +63,8 @@ homekit:
 discovery:
   enable:
      - homekit
-
+  ignore:
+    - harmony
 # Allows you to issue voice commands from the frontend in enabled browsers
 conversation:
 
@@ -93,7 +94,7 @@ ios:
           - identifier: 'MOVEDOOR'
             title: 'Close door'
             activationMode: 'background'
-            authenticationRequired: yes
+            authenticationRequired: no
             destructive: no
 #            behavior: 'textInput'
 #            textInputButtonTitle: 'Garage'
@@ -133,13 +134,9 @@ ring:
 
 camera:
   - platform: ring
-    monitored_conditions:
 
 binary_sensor:
   - platform: ring
-    monitored_conditions:
-      - ding
-      - motion
 
   - platform: bayesian
     prior: 0.5
@@ -167,15 +164,21 @@ binary_sensor:
 #        platform: 'state'
 #        to_state: 'home'
 
+  - platform: mqtt
+    name: "Living Room 2nd light switch"
+    state_topic: "livingfan/stat/RESULT"
+    value_template: "{{ value_json['S29cmnd_D5']['STATE'] }}"
+
+alexa_media:
+  accounts:
+    - email: !secret amazon_email
+      password: !secret amazon_password
+      url: amazon.com
+
 media_player:
   - platform: onkyo
     host: 10.1.1.44
     name: receiver_patio
-
-  - platform: alexa
-    email: !secret amazon_email
-    password: !secret amazon_password
-    url: amazon.com
 
   - platform: plex
     entity_namespace: 'plex'
@@ -241,114 +244,117 @@ sensor:
 # Dark Sky weather sensor
   - platform: darksky
     api_key: !secret darksky_key
+    units: us
     monitored_conditions:
       - summary
-#      - icon
+      - icon
       - temperature
       - wind_speed
       - wind_bearing
-#      - humidity
-#      - pressure
-#      - cloud_cover
-#      - precip_type
-#      - precip_intensity
+      - humidity
+      - pressure
+      - cloud_cover
+      - precip_type
+      - precip_intensity
       - precip_accumulation
       - nearest_storm_distance
-    units: us
+
+  - platform: flunearyou
+    latitude: !secret latitude
+    longitude: !secret longitude
+
+  - platform: pollen
+    zip_code: !secret zip_code
 
   - platform: mqtt
     name: "Office Temperature"
-    state_topic: "tele/extra/SENSOR"
+    state_topic: "tele/office_desk/SENSOR"
     value_template: "{{ value_json['AM2301'].Temperature }}"
     unit_of_measurement: "°F"
-    monitored_conditions:
 
   - platform: mqtt
     name: "Office Humidity"
-    state_topic: "tele/extra/SENSOR"
+    state_topic: "tele/office_desk/SENSOR"
     value_template: "{{ value_json['AM2301'].Humidity }}"
     unit_of_measurement: "%"
-    monitored_conditions:
 
   - platform: mqtt
     name: "Yard Temperature"
     state_topic: "tele/yard/SENSOR"
     value_template: "{{ value_json['AM2301'].Temperature }}"
     unit_of_measurement: "°F"
-    monitored_conditions:
-      - temperature
 
   - platform: mqtt
     name: "Yard Humidity"
     state_topic: "tele/yard/SENSOR"
     value_template: "{{ value_json['AM2301'].Humidity }}"
     unit_of_measurement: "%"
-    monitored_conditions:
-      - humidity
 
   - platform: mqtt
     name: "Kitchen Temperature"
     state_topic: "tele/kitchen/SENSOR"
     value_template: "{{ value_json['AM2301'].Temperature }}"
     unit_of_measurement: "°F"
-    monitored_conditions:
-      - temperature
 
   - platform: mqtt
     name: "Kitchen Humidity"
     state_topic: "tele/kitchen/SENSOR"
     value_template: "{{ value_json['AM2301'].Humidity }}"
     unit_of_measurement: "%"
-    monitored_conditions:
-      - humidity
 
   - platform: mqtt
     name: "Garage Temperature"
     state_topic: "tele/garage/SENSOR"
     value_template: "{{ value_json['AM2301'].Temperature }}"
     unit_of_measurement: "°F"
-    monitored_conditions:
-      - temperature
 
   - platform: mqtt
     name: "Garage Humidity"
     state_topic: "tele/garage/SENSOR"
     value_template: "{{ value_json['AM2301'].Humidity }}"
     unit_of_measurement: "%"
-    monitored_conditions:
-      - humidity
 
   - platform: mqtt
     name: "Powerstrip Temperature"
     state_topic: "tele/powerstrip/SENSOR"
     value_template: "{{ value_json['AM2301'].Temperature }}"
     unit_of_measurement: "°F"
-    monitored_conditions:
-      - temperature
 
   - platform: mqtt
     name: "Powerstrip Humidity"
     state_topic: "tele/powerstrip/SENSOR"
     value_template: "{{ value_json['AM2301'].Humidity }}"
     unit_of_measurement: "%"
-    monitored_conditions:
-      - humidity
 
   - platform: mqtt
-    name: "Christmas light energy"
+    name: "Will's Lamp energy"
     state_topic: "tele/plug1/SENSOR"
     value_template: "{{ value_json['ENERGY'].Total }}"
     unit_of_measurement: "kWh"
-    monitored_conditions:
-      - Total Power
 
   - platform: mqtt
-    name: "Christmas Tree energy"
+    name: "Soldering Iron energy"
     state_topic: "tele/plug2/SENSOR"
     value_template: "{{ value_json['ENERGY'].Total }}"
     unit_of_measurement: "kWh"
-    monitored_conditions:
-      - Total Power
+
+  - platform: mqtt
+    name: "Living Room Temperature"
+    state_topic: "livingfan/tele/SENSOR"
+    value_template: "{{ value_json['BME280'].Temperature }}"
+    unit_of_measurement: "°F"
+
+  - platform: mqtt
+    name: "Living Room Humidity"
+    state_topic: "livingfan/tele/SENSOR"
+    value_template: "{{ value_json['BME280'].Humidity }}"
+    unit_of_measurement: "%"
+
+  - platform: mqtt
+    name: "Living Room Pressure"
+    state_topic: "livingfan/tele/SENSOR"
+    value_template: "{{ value_json['BME280'].Pressure }}"
+    unit_of_measurement: "hPa"
 
   # Weather prediction
 #  - platform: openweathermap
@@ -370,26 +376,6 @@ notify:
     services:
       - service: ios_will
       - service: ios_merediths_iphone
-
-# sonoff switch config from tasmota/DrZz yt
-cover:
-  - platform: mqtt
-    name: "toggle1"
-    state_topic: "stat/garage/POWER2"
-#    state_topic: "tele/garage/SENSOR"
-#    value_template: '{{ value_json["Switch2"] }}'
-    command_topic: "cmnd/garage/POWER1"
-    availability_topic: "tele/garage/LWT"
-    qos: 1
-    payload_open: "ON"
-    payload_close: "ON"
-    payload_stop: "ON"
-    payload_available: "Online"
-    payload_not_available: "Offline"
-    state_open: "1"
-    state_closed: "0"
-    optimistic: false
-    retain: false
 
 fan:
   - platform: mqtt
@@ -450,25 +436,25 @@ fan:
       - high
 
   - platform: mqtt
-    name: "living_fan"
-    state_topic: "living_fan/stat/RESULT"
-    speed_state_topic: "living_fan/stat/RESULT"
+    name: "livingfan"
+    state_topic: "livingfan/stat/RESULT"
+    speed_state_topic: "livingfan/stat/RESULT"
 #    state_value_template: "{% if value_json.FanSpeed == 0 -%}0{%- elif value_json.FanSpeed > 0 -%}2{%- endif %}"
     state_value_template: >
       {% if value_json.FanSpeed is defined %}
         {% if value_json.FanSpeed == 0 -%}0{%- elif value_json.FanSpeed > 0 -%}4{%- endif %}
       {% else %}
-        {% if states.fan.living_fan.state == 'off' -%}0{%- elif states.fan.living_fan.state == 'on' -%}4{%- endif %}
+        {% if states.fan.livingfan.state == 'off' -%}0{%- elif states.fan.livingfan.state == 'on' -%}4{%- endif %}
       {% endif %}
     speed_value_template: "{{ value_json.FanSpeed }}"
-    availability_topic: living_fan/tele/LWT
+    availability_topic: livingfan/tele/LWT
     payload_available: Online
     payload_not_available: Offline
-    speed_command_topic: "living_fan/cmnd/FanSpeed"
+    speed_command_topic: "livingfan/cmnd/FanSpeed"
     payload_low_speed: "1"
     payload_medium_speed: "2"
     payload_high_speed: "3"
-    command_topic: "living_fan/cmnd/FanSpeed"
+    command_topic: "livingfan/cmnd/FanSpeed"
     payload_off: "0"
     payload_on: "4"
     speeds:
@@ -490,7 +476,6 @@ light:
 
   - platform: mqtt
     name: "entry"
-    icon: mdi:lightbulb-on
     state_topic: "stat/entry/POWER"
     command_topic: "cmnd/entry/POWER"
     availability_topic: "tele/entry/LWT"
@@ -499,14 +484,13 @@ light:
     payload_off: "OFF"
     payload_available: "Online"
     payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
+#    state_on: "ON"
+#    state_off: "OFF"
     optimistic: false
     retain: false
 
   - platform: mqtt
     name: "table"
-    icon: mdi:ceiling-light
     state_topic: "stat/table/POWER"
     command_topic: "cmnd/table/POWER"
     availability_topic: "tele/table/LWT"
@@ -515,14 +499,13 @@ light:
     payload_off: "OFF"
     payload_available: "Online"
     payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
+#    state_on: "ON"
+#    state_off: "OFF"
     optimistic: false
     retain: false
 
   - platform: mqtt
     name: "yard"
-    icon: mdi:lightbulb
     state_topic: "stat/yard/POWER"
     command_topic: "cmnd/yard/POWER"
     availability_topic: "tele/yard/LWT"
@@ -531,14 +514,13 @@ light:
     payload_off: "OFF"
     payload_available: "Online"
     payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
+#    state_on: "ON"
+#    state_off: "OFF"
     optimistic: false
     retain: false
 
   - platform: mqtt
     name: "officefan"
-    icon: mdi:ceiling-light
     state_topic: "stat/office_fan/POWER1"
     command_topic: "cmnd/office_fan/POWER1"
     availability_topic: "tele/office_fan/LWT"
@@ -547,14 +529,13 @@ light:
     payload_off: "OFF"
     payload_available: "Online"
     payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
+#    state_on: "ON"
+#    state_off: "OFF"
     optimistic: false
     retain: false
 
   - platform: mqtt
     name: "mediaroom"
-    icon: mdi:fan
     state_topic: "media_fan/stat/POWER1"
     command_topic: "media_fan/cmnd/POWER1"
     availability_topic: "media_fan/tele/LWT"
@@ -563,14 +544,13 @@ light:
     payload_off: "OFF"
     payload_available: "Online"
     payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
+#    state_on: "ON"
+#    state_off: "OFF"
     optimistic: false
     retain: false
 
   - platform: mqtt
     name: "kitchen"
-    icon: mdi:ceiling-light
     state_topic: "stat/kitchen/POWER"
     command_topic: "cmnd/kitchen/POWER"
     availability_topic: "tele/kitchen/LWT"
@@ -579,78 +559,85 @@ light:
     payload_off: "OFF"
     payload_available: "Online"
     payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
+#    state_on: "ON"
+#    state_off: "OFF"
     optimistic: false
     retain: false
 
   - platform: mqtt
     name: "livingroom"
-    icon: mdi:fan
-    state_topic: "living_fan/stat/POWER1"
-    command_topic: "living_fan/cmnd/POWER1"
-    availability_topic: "living_fan/tele/LWT"
+    state_topic: "livingfan/stat/POWER1"
+    command_topic: "livingfan/cmnd/POWER1"
+    availability_topic: "livingfan/tele/LWT"
     qos: 1
     payload_on: "ON"
     payload_off: "OFF"
     payload_available: "Online"
     payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
+#    state_on: "ON"
+#    state_off: "OFF"
     optimistic: false
     retain: false
 
+#  - platform: mqtt
+#    name: "landing"
+#    icon: mdi:ceiling-light
+#    state_topic: "livingfan/stat/RESULT"
+#  #  value_template: "{{ value_json['S29cmnd_D0']['STATE'] }}"
+#    value_template: >
+#      {% if S29cmnd_D0 in [value_json] %}
+#      "0,{{ value_json['S29cmnd_D0'].STATE }}"
+#      {% endif %}
+#    command_topic: "livingfan/cmnd/sensor29"
+#    payload_on: "0,ON"
+#    payload_off: "0,OFF"
+##    payload_toggle: "0,T"
+#    availability_topic: "livingfan/tele/LWT"
+#    payload_available: "Online"
+#    payload_not_available: "Offline"
+#    optimistic: false
+#    retain: false
+
   - platform: mqtt
-    name: "landing"
-    icon: mdi:ceiling-light
-    state_topic: "living_fan/stat/RESULT"
-    state_value_template: "{{ value_json['S29cmnd_D0']['STATE'] }}"
-    state_on: "ON"
-    state_off: "OFF"
-    command_topic: "living_fan/cmnd/sensor29"
-    payload_on: "0,On"
-    payload_off: "0,Off"
-    payload_toggle: "0,T"
-    availability_topic: "living_fan/tele/LWT"
+    schema: template
+    name: "Landing"
+    command_topic: "livingfan/cmnd/sensor29"
+    state_topic: "livingfan/stat/RESULT"
+    command_on_template: "0,ON"
+    command_off_template: "0,OFF"
+    state_template: >-
+      {% if value_json.S29cmnd_D0 %}
+        {{ "on" if value_json.S29cmnd_D0.STATE == 'ON' }}
+        {{ "off" if value_json.S29cmnd_D0.STATE == 'OFF' }}
+      {% elif value_json.Sensor29_D0 %}
+        {{ "on" if value_json.Sensor29_D0.STATE == 'ON' }}
+        {{ "off" if value_json.Sensor29_D0.STATE == 'OFF' }}
+      {% else %}
+      {{ states.light.landing.state }}
+      {% endif %}
+    availability_topic: "livingfan/tele/LWT"
     payload_available: "Online"
     payload_not_available: "Offline"
-    optimistic: False
-    retain: False
+    optimistic: false
+    qos: 1
+    retain: false
+
+  - platform: mqtt
+    name: "willslamp"
+    state_topic: "stat/plug1/POWER"
+    command_topic: "cmnd/plug1/POWER"
+    availability_topic: "tele/plug1/LWT"
+    qos: 1
+    payload_on: "ON"
+    payload_off: "OFF"
+    payload_available: "Online"
+    payload_not_available: "Offline"
+#    state_on: "ON"
+#    state_off: "OFF"
+    optimistic: false
+    retain: false
 
 switch:
-
-  - platform: mqtt
-    name: "officedesk"
-    icon: mdi:sword-cross
-    state_topic: "stat/office_desk/POWER"
-    command_topic: "cmnd/office_desk/POWER"
-    availability_topic: "tele/office_desk/LWT"
-    qos: 1
-    payload_on: "On"
-    payload_off: "Off"
-    payload_available: "Online"
-    payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
-    optimistic: false
-    retain: false
-
-  - platform: mqtt
-    name: "extra"
-    icon: mdi:sword-cross
-    state_topic: "stat/extra/POWER"
-    command_topic: "cmnd/extra/POWER"
-    availability_topic: "tele/extra/LWT"
-    qos: 1
-    payload_on: "On"
-    payload_off: "Off"
-    payload_available: "Online"
-    payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
-    optimistic: false
-    retain: false
-
   - platform: mqtt
     name: "powerstrip"
     icon: mdi:flash-circle
@@ -668,23 +655,7 @@ switch:
     retain: false
 
   - platform: mqtt
-    name: "christmaslights"
-    icon: mdi:snowflake
-    state_topic: "stat/plug1/POWER"
-    command_topic: "cmnd/plug1/POWER"
-    availability_topic: "tele/plug1/LWT"
-    qos: 1
-    payload_on: "On"
-    payload_off: "Off"
-    payload_available: "Online"
-    payload_not_available: "Offline"
-    state_on: "ON"
-    state_off: "OFF"
-    optimistic: false
-    retain: false
-
-  - platform: mqtt
-    name: "christmastree"
+    name: "solderingiron"
     icon: mdi:pine-tree
     state_topic: "stat/plug2/POWER"
     command_topic: "cmnd/plug2/POWER"

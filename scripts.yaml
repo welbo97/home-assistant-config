@@ -6,7 +6,7 @@
       data_template:
         entity_id: group.all_echos
 #        entity_id: media_player.kitchen, media_player.patio_dot, media_player.bathroom_dot, media_player.upstairs, media_player.garage_dot
-        message: May the Force be with you!
+        message: -> 'May the Force be with you!'
 
   back_online:
     alias: I am alive and everywhere.
@@ -15,7 +15,7 @@
       data_template:
         entity_id: group.all_echos
 #        entity_id: media_player.kitchen, media_player.patio_dot, media_player.bathroom_dot, media_player.upstairs, media_player.garage_dot
-        message: I've got a little story for you Ags. One time Rock the good Ag went to A & M and graduated and made a lot of money.
+        message: -> "I've got a little story for you Ags. One time Rock the good Ag went to A & M and graduated and made a lot of money."
 
   weather_data:
     alias: Weather talk
@@ -41,7 +41,7 @@
       - service: media_player.alexa_tts
         data_template:
           entity_id: media_player.{{ mplayer }}
-          message: "{{ tts_msg }}"
+          message: -> "{{ tts_msg }}"
 
   merediths_iphone_notify:
     alias: Meredith Phone notify

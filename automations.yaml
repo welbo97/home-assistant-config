@@ -2,7 +2,7 @@
   initial_state: True
   trigger:
     platform: time
-    at: 06:30:00
+    at: '06:21:50'
   condition:
     condition: time
     weekday:
@@ -18,11 +18,12 @@
       - light.officefan
       - light.kitchen
       - light.table
-      - light.yard
+      - light.livingroom
+#      - light.yard
   - service: media_player.alexa_tts
     data_template:
       message: Good morning. I have turned on the lights for you.
-      entity_id: media_player.kitchen, media_player.upstairs
+      entity_id: media_player.kitchen_2, media_player.upstairs_2
   id: c8e15240eb3e4ca5bcdb6b1c6633c7b9
 - alias: Turn off outside lights
   initial_state: True
@@ -69,10 +70,28 @@
       topic: cmnd/sonoffs/STATE
       qos: 0
       retain: 0
+  - service: mqtt.publish
+    data:
+      payload: ''
+      topic: sonoffs/cmnd/POWER
+      qos: 0
+      retain: 0
+  - service: mqtt.publish
+    data:
+      payload: ''
+      topic: sonoffs/cmnd/STATE
+      qos: 0
+      retain: 0
+  - service: mqtt.publish
+    data:
+      payload: '0,?'
+      topic: livingfan/cmnd/sensor29
+      qos: 0
+      retain: 0
   - service: media_player.alexa_tts
     data_template:
       message: Home assistant startup complete
-      entity_id: media_player.patio_dot
+      entity_id: media_player.kitchen_2
   - service: mqtt.publish
     data:
       payload: ''
@@ -80,38 +99,24 @@
       qos: 0
       retain: 0
 
-  id: garage_reconnect
-- alias: Garage controller reconnect
-  initial_state: False
-  trigger:
-    platform: state
-    entity_id: cover.toggle1
-    to: 'unavailable'
-    for:
-      hours: 0
-      minutes: 2
-      seconds: 4
-  action:
-    service: mqtt.publish
-    data:
-      payload: ''
-      topic: cmnd/garage/POWER2
-      qos: 0
-      retain: 0
-
   id: ca163ff1647c4baf954199a7b700adbd
 - alias: Garage State Notification
-  initial_state: False
+  initial_state: True
   trigger:
-    platform: state
-    entity_id: cover.toggle1
-    from: not_unavailable
+    - platform: state
+      entity_id: cover.garage_door
+      from: 'open'
+      to: 'closed'
+    - platform: state
+      entity_id: cover.garage_door
+      from: 'closed'
+      to: 'open'
   action:
   - service: media_player.alexa_tts
     data_template:
       message: 'The {{ trigger.to_state.attributes.friendly_name }} is: {{ trigger.to_state.state
         }}'
-      entity_id: media_player.patio_dot
+      entity_id: media_player.kitchen_2
 #  - service: notify.phones
 #    data_template:
 #      title: 'Garage state'
@@ -133,7 +138,7 @@
     data_template:
       message: The office fan is too unbalanced to run at high speed. Setting it to
         low speed.
-      entity_id: media_player.kitchen
+      entity_id: media_player.kitchen_2
   id: 917d0fcce7a84a249f6a8845306396ba
 
 - id: '1534775156856'
@@ -144,8 +149,8 @@
     at: '20:05:00'
   condition:
   - condition: state
-    entity_id: cover.toggle1
-    state: open
+    entity_id: cover.garage_door
+    state: 'open'
   action:
   - service: media_player.alexa_tts
     data_template:
@@ -161,7 +166,7 @@
 #          sound: <sound file here>
           category: "garage"
         action_data:
-          entity_id: cover.toggle1
+          entity_id: cover.garage_door
 #          my_custom_data: foo_bar
         subtitle: You should close it
 #  - service: cover.close_cover
@@ -169,7 +174,7 @@
 
 - id: 'move_garage_door'
   alias: Move the garage door
-  initial_state: False
+  initial_state: True
   trigger:
     platform: event
     event_type: ios.notification_action_fired
@@ -177,26 +182,26 @@
       actionName: MOVEDOOR
   action:
     service: cover.close_cover
-    entity_id: cover.toggle1
+    entity_id: cover.garage_door
 
 - id: '1535232084234'
   initial_state: True
   alias: Soldering iron on
   trigger:
-  - entity_id: switch.officedesk
+  - entity_id: switch.solderingiron
     from: 'off'
     platform: state
     to: 'on'
     for:
-      hours: 2
+      hours: 1
   action:
   - service: media_player.alexa_tts
     data_template:
       entity_id: group.all_echos
-      message: The soldering iron has been on for two hours. Let me turn it off for you.
+      message: "I'm turning off the soldering iron."
   - service: switch.turn_off
     data:
-      entity_id: switch.officedesk
+      entity_id: switch.solderingiron
 
 - id: '1537845424076'
   initial_state: True
@@ -222,12 +227,12 @@
   - service: notify.phones
     data:
       message: Motion is detected at the front door.
-  - delay: '00:30:00'
-  - service: light.turn_off
-    data:
-      entity_id:
-        - light.entry
-        - light.officefan
+#  - delay: '00:30:00'
+#  - service: light.turn_off
+#    data:
+#      entity_id:
+#        - light.entry
+#        - light.officefan
 
 - id: '1538156318288'
   initial_state: True
@@ -238,19 +243,20 @@
     from: 'not_home'
     platform: state
     to: 'home'
-  condition:
-    - condition: numeric_state
-      entity_id: sensor.dark_sky_wind_speed
-      below: 13
+#  condition:
+#    - condition: numeric_state
+#      entity_id: sensor.dark_sky_wind_speed
+#      below: 13
 
   action:
     - service: light.turn_on
       data:
         entity_id:
-          - light.officefan
+#          - light.officefan
           - light.kitchen
-          - light.livingfan
-          - light.table
+          - light.landing
+#          - light.livingfan
+#          - light.table
 #    - service: switch.turn_on
 #      data:
 #        entity_id:
@@ -262,15 +268,15 @@
         message: "All is well."
         data:
           subtitle: "Meredith is home"
-          push:
-            badge: 1
+#          push:
+#            badge: 1
 #    - service: media_player.alexa_tts
 #      data_template:
 #        entity_id: media_player.kitchen, media_player.patio_dot, media_player.bathroom_dot, media_player.upstairs, media_player.garage_dot
 #        message: Welcome home, Meredith. Let me turn on the lights for you. Boys. Put away your things.
 
 - id: '979797979797'
-  initial_state: False
+  initial_state: True
   alias: Will is home
   trigger:
     entity_id: binary_sensor.will_presence
@@ -288,16 +294,18 @@
         entity_id:
           - light.officedesk
           - light.entry
+          - light.landing
   #  - service: media_player.alexa_tts
   #    data_template:
   #      entity_id: kitchen
   #      message: Hey everybody. Dad is home. Drop what you are doing and go give him hugs and kisses.
 
 - id: 'Will is at work'
+  initial_state: True
   alias: Will at work
   trigger:
     platform: zone
-    entity_id: device_tracker.will_c2b0add59fa641c29c3a23da6375db6c
+    entity_id: device_tracker.will_c2b0add5_9fa6_41c2_9c3a_23da6375db6c
     zone: zone.saturn
     event: enter
   action:
@@ -307,14 +315,14 @@
         message: "And he loves and misses you!"
         data:
           subtitle: "Will is back at Saturn"
-          push:
-            badge: 1
+#          push:
+#            badge: 1
 
 - id: 'Meredith on the move'
   alias: Meredith leaving home
   trigger:
     platform: zone
-    entity_id: device_tracker.meredith_4ce8c31f07c34e62b71d5cbf643d5ece
+    entity_id: device_tracker.meredith_4ce8c31f_07c3_4e62_b71d_5cbf643d5ece
     zone: zone.Home
     event: leave
   action:
@@ -324,8 +332,8 @@
         message: "Better keep an eye on her!"
         data:
           subtitle: "Meredith is on the move"
-          push:
-            badge: 1
+#          push:
+#            badge: 1
 
 #- id: 'someone_is_home'
 #  initial_state: True
@@ -359,8 +367,8 @@
   trigger:
     platform: state
     entity_id: group.family
-    from: ‘not_home’
-    to: ‘home’
+    from: 'home'
+    to: 'not_home'
 #    platform: time
     # You can also match on interval. This will match every 24 minutes
 #    minutes: '/24'

@@ -3,8 +3,7 @@
 #  config:
 #    weather: weather.yweather
 #    sun: sun.sun
-camera.ffmpeg:
-  order: 1
+
 camera.nb_front:
   order: 2
 camera.den_door:
@@ -14,9 +13,9 @@ camera.front_door:
 camera.302:
   order: 5
 
-cover.toggle1:
-  device_class: garage
+cover.garage_door:
   friendly_name: Garage Door
+  icon: mdi:garage
 
 light.landing:
   friendly_name: Landing Light
@@ -53,6 +52,10 @@ light.office_lamp:
   icon: mdi:lamp
   friendly_name: Office lamp
 
+light.den_lamp:
+  icon: mdi:lamp
+  friendly_name: Den lamp
+
 fan.office_fan:
   icon: mdi:fan
   friendly_name: Office Fan
@@ -61,26 +64,22 @@ fan.media_fan:
   icon: mdi:fan
   friendly_name: Media Room Fan
 
-fan.living_fan:
+fan.livingfan:
   icon: mdi:fan
   friendly_name: Living Room Fan
 
-switch.officedesk:
+switch.office_desk:
   icon: mdi:sword-cross
   friendly_name: Office Desk
-
-switch.extra:
-  icon: mdi:sword-cross
-  friendly_name: Test Outlet
 
 switch.powerstrip:
   icon: mdi:flash
   friendly_name: Smart Powerstrip
 
-switch.christmaslights:
-  icon: mdi:snowflake
-  friendly_name: Christmas Lights
+light.willslamp:
+  icon: mdi:lamp
+  friendly_name: Will's lamp
 
-switch.christmastree:
-  icon: mdi:pine-tree
-  friendly_name: Christmas Tree
+switch.solderingiron:
+  icon: mdi:sword-cross
+  friendly_name: Soldering Iron

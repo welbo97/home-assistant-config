@@ -5,7 +5,7 @@ will:
     - device_tracker.will
     - device_tracker.will_2
     - device_tracker.will_ping
-    - device_tracker.will_c2b0add59fa641c29c3a23da6375db6c
+    - device_tracker.ill_c2b0add5_9fa6_41c2_9c3a_23da6375db6c
 
 meredith:
   name: Meredith
@@ -13,7 +13,7 @@ meredith:
   entities:
     - device_tracker.meredith_ping
     - device_tracker.meredithsiphone
-    - device_tracker.meredith_4ce8c31f07c34e62b71d5cbf643d5ece
+    - device_tracker.meredith_4ce8c31f_07c3_4e62_b71d_5cbf643d5ece
 
 family:
   name: Family
@@ -28,7 +28,7 @@ garage_doors:
   control: hidden
   icon: mdi:garage
   entities:
-    - cover.toggle1
+    - cover.garage_door
 
 lights:
   name: Lights
@@ -45,6 +45,8 @@ lights:
     - light.mediaroom
     - light.office_lamp
     - light.landing
+    - light.willslamp
+    - light.den_lamp
 
 fans:
   name: Fans
@@ -62,11 +64,9 @@ switches:
   control: hidden
   icon: mdi:sword-cross
   entities:
-    - switch.extra
-    - switch.officedesk
+    - switch.office_desk
     - switch.powerstrip
-    - switch.plug1
-    - switch.plug2
+    - switch.solderingiron
 
 all_echos:
   name: All echos
@@ -74,12 +74,12 @@ all_echos:
   control: hidden
   icon: mdi:youtube-tv
   entities:
-    - media_player.kitchen
-    - media_player.upstairs
-    - media_player.patio_dot
-    - media_player.bathroom_dot
-    - media_player.garage_dot
-    - media_player.merediths_echosim_beta
+    - media_player.kitchen_2
+    - media_player.upstairs_2
+    - media_player.patio_dot_2
+    - media_player.bathroom_dot_2
+    - media_player.garage_dot_2
+    - media_player.merediths_echosim_beta_2
 
 media_players:
   name: Media Players
